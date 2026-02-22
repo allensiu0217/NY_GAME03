@@ -342,11 +342,15 @@
         const charCount = q.answer.replace(/[\s\(\)-]/g, '').length;
         document.getElementById('hint').innerText = `💡 提示：共 ${charCount} 字`;
         
-        document.getElementById('answer').innerText = q.answer;
+        // 【修復防劇透】：載入題目時，將文字設為問號，避免淡出動畫走光
+        document.getElementById('answer').innerText = '???';
         document.getElementById('answer').classList.remove('show-answer');
     }
 
     function showAnswer() {
+        // 【修復防劇透】：點擊顯示時，才把真實答案寫入並加上漸變動畫
+        const q = gameQuestions[currentQIndex];
+        document.getElementById('answer').innerText = q.answer;
         document.getElementById('answer').classList.add('show-answer');
     }
 
