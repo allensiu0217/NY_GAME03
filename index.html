@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji 估估劃劃大挑戰 (完整100題版)</title>
+    <style>
+        :root {
+            --primary-color: #E53935;
+            --secondary-color: #FFC107;
+            --bg-color: #FFF8E1;
+            --text-color: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            padding: 40px 20px;
+            width: 90%;
+            max-width: 600px;
+            border: 4px solid var(--primary-color);
+        }
+        h1 { color: var(--primary-color); font-size: 2.2em; margin-bottom: 10px; }
+        .emoji-display { font-size: 4.5em; margin: 30px 0; letter-spacing: 5px; }
+        .category-tag {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+        .hint-text {
+            font-size: 1.2em;
+            color: #555;
+            font-weight: bold;
+            background-color: #f0f0f0;
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            border-bottom: 2px dashed var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 15px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, filter 0.2s;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn:active:not(:disabled) { transform: scale(0.95); }
+        .btn:hover:not(:disabled) { filter: brightness(1.1); }
+        .btn-success { background-color: #4CAF50; }
+        .btn-warning { background-color: #FF9800; }
+        .btn-secondary { background-color: #9E9E9E; }
+        .btn-danger { background-color: #F44336; }
+        .btn-large { width: 100%; max-width: 300px; font-size: 1.3em; padding: 20px; }
+        
+        /* 禁用狀態樣式 */
+        .btn:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        #game-screen, #end-screen { display: none; }
+        .answer-text {
+            font-size: 1.8em;
+            color: #2196F3;
+            font-weight: bold;
+            min-height: 1.5em;
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .show-answer { opacity: 1; }
+        
+        @media (max-width: 480px) {
+            .emoji-display { font-size: 3.5em; }
+            h1 { font-size: 1.8em; }
+            .btn { font-size: 1em; padding: 12px 10px; }
+            .stats { font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="start-screen">
+    <h1>🎉 Emoji 估估劃劃</h1>
+    <p style="font-size: 1.1em; font-weight: bold; color: #555;">成語狂熱 100 題派對版</p>
+    <p style="text-align: left; background: #fff3e0; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <strong>主題：</strong>全民必備！100 題四字成語（包含動物、數字、自然與動作篇）<br><br>
+        <strong>⚠️ 刺激新規則：</strong><br>
+        1. 限時 90 秒！<br>
+        2. <strong>最多只能答錯 5 題</strong>，錯滿即刻 Game Over！<br>
+        3. 遇到難題可跳過，但<strong>整場最多只能跳過 3 次</strong>！
+    </p>
+    <button class="btn btn-large" onclick="startGame()">接受挑戰 🚀</button>
+</div>
+
+<div class="container" id="game-screen">
+    <div class="stats">
+        <div>⏳ <span id="time">90</span>s</div>
+        <div style="color: #F44336;">❤️ <span id="lives">5</span></div>
+        <div>🏆 分數: <span id="score">0</span></div>
+    </div>
+    <div class="category-tag" id="category">類別</div>
+    <div class="hint-text" id="hint">💡 字數提示：- 字</div>
+    <div class="emoji-display" id="emoji">❓❓❓</div>
+    <div class="answer-text" id="answer">答案在此</div>
+    
+    <div class="btn-group">
+        <button class="btn btn-warning" onclick="showAnswer()" style="flex: 100%;">👀 顯示答案</button>
+        <button class="btn btn-danger" onclick="handleAnswer('wrong')">❌ 答錯</button>
+        <button class="btn btn-secondary" id="skip-btn" onclick="handleAnswer('skip')">⏭️ 跳過 (餘3)</button>
+        <button class="btn btn-success" onclick="handleAnswer('correct')" style="flex: 100%;">✅ 答對 (+1)</button>
+    </div>
+</div>
+
+<div class="container" id="end-screen">
+    <h1 id="end-title">⏰ 時間到！</h1>
+    <p style="font-size: 1.5em;">你們總共答對了 <br><span id="final-score" style="color: var(--primary-color); font-weight: bold; font-size: 3em;">0</span> <br>題！</p>
+    <br>
+    <button class="btn btn-large" onclick="resetGame()">再玩一次 🔄</button>
+</div>
+
+<script>
+    // 完整 100 題題庫 (全部改為四字成語)
+    const allQuestions = [
+        // --- 類別 1: 動物篇 ---
+        { emoji: "🐂🎸", answer: "對牛彈琴", category: "四字成語 (動物篇)" },
+        { emoji: "🏃‍♂️🐎👀🌸", answer: "走馬看花", category: "四字成語 (動物篇)" },
+        { emoji: "🦊🎭🐯", answer: "狐假虎威", category: "四字成語 (動物篇)" },
+        { emoji: "✍️🐍➕🦶", answer: "畫蛇添足", category: "四字成語 (動物篇)" },
+        { emoji: "🌳⏳🐇", answer: "守株待兔", category: "四字成語 (動物篇)" },
+        { emoji: "🐓🐕🚫🛑", answer: "雞犬不寧", category: "四字成語 (動物篇)" },
+        { emoji: "🕳️⬇️🐸", answer: "井底之蛙", category: "四字成語 (動物篇)" },
+        { emoji: "🕶️🧑‍🦯摸🐘", answer: "盲人摸象", category: "四字成語 (動物篇)" },
+        { emoji: "🐉🐎💪", answer: "龍馬精神", category: "四字成語 (動物篇)" },
+        { emoji: "🐍🐭1️⃣🏠", answer: "蛇鼠一窩", category: "四字成語 (動物篇)" },
+        { emoji: "☠️🐑🛠️欄", answer: "亡羊補牢", category: "四字成語 (動物篇)" },
+        { emoji: "9️⃣🐂1️⃣🪶", answer: "九牛一毛", category: "四字成語 (動物篇)" },
+        { emoji: "🔪🐓⚠️🐒", answer: "殺雞儆猴", category: "四字成語 (動物篇)" },
+        { emoji: "🦅🧍‍♂️🐓", answer: "鶴立雞群", category: "四字成語 (動物篇)" },
+        { emoji: "🐺👄🐯🍽️", answer: "狼吞虎嚥", category: "四字成語 (動物篇)" },
+        { emoji: "🐟💧😊", answer: "如魚得水", category: "四字成語 (動物篇)" },
+        { emoji: "⬇️🐟🛬🦆", answer: "沉魚落雁", category: "四字成語 (動物篇)" },
+        { emoji: "🐦🗣️🌸🌺", answer: "鳥語花香", category: "四字成語 (動物篇)" },
+        { emoji: "🐦🐦🚫🔊", answer: "鴉雀無聲", category: "四字成語 (動物篇)" },
+        { emoji: "🐇☠️🐕🍲", answer: "兔死狗烹", category: "四字成語 (動物篇)" },
+        { emoji: "💦🐂滿🏠", answer: "汗牛充棟", category: "四字成語 (動物篇)" },
+        { emoji: "🕷️🧵🐎👣", answer: "蛛絲馬跡", category: "四字成語 (動物篇)" },
+        { emoji: "😱🏹🐦", answer: "驚弓之鳥", category: "四字成語 (動物篇)" },
+        { emoji: "🦋✈️🔥", answer: "飛蛾撲火", category: "四字成語 (動物篇)" },
+        { emoji: "🐑➡️🐯👄", answer: "羊入虎口", category: "四字成語 (動物篇)" },
+
+        // --- 類別 2: 數字篇 ---
+        { emoji: "1️⃣🪨2️⃣🐦", answer: "一石二鳥", category: "四字成語 (數字篇)" },
+        { emoji: "3️⃣❤️2️⃣🤔", answer: "三心二意", category: "四字成語 (數字篇)" },
+        { emoji: "4️⃣🌊🏠", answer: "四海為家", category: "四字成語 (數字篇)" },
+        { emoji: "5️⃣🎨6️⃣🌈", answer: "五顏六色", category: "四字成語 (數字篇)" },
+        { emoji: "7️⃣⬆️8️⃣⬇️", answer: "七上八下", category: "四字成語 (數字篇)" },
+        { emoji: "9️⃣☠️1️⃣🌱", answer: "九死一生", category: "四字成語 (數字篇)" },
+        { emoji: "🔟💯🔟👍", answer: "十全十美", category: "四字成語 (數字篇)" },
+        { emoji: "1000🪖10000🐎", answer: "千軍萬馬", category: "四字成語 (數字篇)" },
+        { emoji: "10000💧10000⛰️", answer: "萬水千山", category: "四字成語 (數字篇)" },
+        { emoji: "1️⃣🏹2️⃣🦅", answer: "一箭雙鵰", category: "四字成語 (數字篇)" },
+        { emoji: "3️⃣🗣️2️⃣💬", answer: "三言兩語", category: "四字成語 (數字篇)" },
+        { emoji: "4️⃣⬛🎵", answer: "四面楚歌", category: "四字成語 (數字篇)" },
+        { emoji: "5️⃣🧍‍♂️⬇️🌍", answer: "五體投地", category: "四字成語 (數字篇)" },
+        { emoji: "6️⃣👼🚫👑", answer: "六神無主", category: "四字成語 (數字篇)" },
+        { emoji: "7️⃣👄8️⃣👅", answer: "七嘴八舌", category: "四字成語 (數字篇)" },
+        { emoji: "9️⃣🐂2️⃣🐯", answer: "九牛二虎", category: "四字成語 (數字篇)" },
+        { emoji: "🔟萬🔥🆘", answer: "十萬火急", category: "四字成語 (數字篇)" },
+        { emoji: "💯🏹💯🎯", answer: "百發百中", category: "四字成語 (數字篇)" },
+        { emoji: "1000🔄10000✨", answer: "千變萬化", category: "四字成語 (數字篇)" },
+        { emoji: "10000🧑‍🤝‍🧑1️⃣❤️", answer: "萬眾一心", category: "四字成語 (數字篇)" },
+        { emoji: "1️⃣🗣️9️⃣🏺", answer: "一言九鼎", category: "四字成語 (數字篇)" },
+        { emoji: "2️⃣💯👍", answer: "兩全其美", category: "四字成語 (數字篇)" },
+        { emoji: "3️⃣🤔🚶‍♂️", answer: "三思而行", category: "四字成語 (數字篇)" },
+        { emoji: "4️⃣🛣️8️⃣🎯", answer: "四通八達", category: "四字成語 (數字篇)" },
+        { emoji: "5️⃣✨🔟🌈", answer: "五光十色", category: "四字成語 (數字篇)" },
+
+        // --- 類別 3: 自然與物品篇 ---
+        { emoji: "🌬️☀️😊", answer: "風和日麗", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🌪️🌧️⛈️", answer: "狂風暴雨", category: "四字成語 (自然與物品篇)" },
+        { emoji: "💧⬇️🪨⬆️", answer: "水落石出", category: "四字成語 (自然與物品篇)" },
+        { emoji: "⛰️✨💧🦋", answer: "山明水秀", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🌊👐☁️🈳", answer: "海闊天空", category: "四字成語 (自然與物品篇)" },
+        { emoji: "✨🔥🌳", answer: "星火燎原", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🧊☁️❄️🌍", answer: "冰天雪地", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🌳🌑🌸✨", answer: "柳暗花明", category: "四字成語 (自然與物品篇)" },
+        { emoji: "✨🌙🚶‍♂️", answer: "披星戴月", category: "四字成語 (自然與物品篇)" },
+        { emoji: "👐☁️👀☀️", answer: "撥雲見日", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🌸🌡️🌺👐", answer: "春暖花開", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🍂⬆️☁️😊", answer: "秋高氣爽", category: "四字成語 (自然與物品篇)" },
+        { emoji: "💧⬇️🪨🕳️", answer: "滴水穿石", category: "四字成語 (自然與物品篇)" },
+        { emoji: "☀️⬆️🕛", answer: "如日中天", category: "四字成語 (自然與物品篇)" },
+        { emoji: "⬇️💧✋⛵", answer: "順水推舟", category: "四字成語 (自然與物品篇)" },
+        { emoji: "鐵🪨❤️", answer: "鐵石心腸", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🌸➕🌺", answer: "錦上添花", category: "四字成語 (自然與物品篇)" },
+        { emoji: "❄️⬇️🎁🔥", answer: "雪中送炭", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🍷🏹🐍👤", answer: "杯弓蛇影", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🪞🌸💧🌙", answer: "鏡花水月", category: "四字成語 (自然與物品篇)" },
+        { emoji: "扔🧱➡️💎", answer: "拋磚引玉", category: "四字成語 (自然與物品篇)" },
+        { emoji: "💔🪞🔄⭕", answer: "破鏡重圓", category: "四字成語 (自然與物品篇)" },
+        { emoji: "💯💎🔙🏠", answer: "完璧歸趙", category: "四字成語 (自然與物品篇)" },
+        { emoji: "📄⬆️🗣️🪖", answer: "紙上談兵", category: "四字成語 (自然與物品篇)" },
+        { emoji: "🕳️🧱偷💡", answer: "鑿壁偷光", category: "四字成語 (自然與物品篇)" },
+
+        // --- 類別 4: 動作與人物篇 ---
+        { emoji: "👉🦌🗣️🐎", answer: "指鹿為馬", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🌱⬆️🤝長", answer: "拔苗助長", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🏫🚪🪓", answer: "班門弄斧", category: "四字成語 (動作與人物篇)" },
+        { emoji: "👀🍑🛑💧", answer: "望梅止渴", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🥤💧🤔⛲", answer: "飲水思源", category: "四字成語 (動作與人物篇)" },
+        { emoji: "✍️🍪滿胃", answer: "畫餅充飢", category: "四字成語 (動作與人物篇)" },
+        { emoji: "👀病⬇️💊", answer: "對症下藥", category: "四字成語 (動作與人物篇)" },
+        { emoji: "✂️🦶👟", answer: "削足適履", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🤗🪵🆘🔥", answer: "抱薪救火", category: "四字成語 (動作與人物篇)" },
+        { emoji: "💧⬇️🚫🤲", answer: "覆水難收", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🎒🌿🙏🙇‍♂️", answer: "負荊請罪", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🛏️🪵👅🤮", answer: "臥薪嘗膽", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🪢🪵🔪腿", answer: "懸樑刺股", category: "四字成語 (動作與人物篇)" },
+        { emoji: "😊🚫🤔🏠", answer: "樂不思蜀", category: "四字成語 (動作與人物篇)" },
+        { emoji: "3️⃣👀🏠", answer: "三顧茅廬", category: "四字成語 (動作與人物篇)" },
+        { emoji: "✍️🐉點👁️", answer: "畫龍點睛", category: "四字成語 (動作與人物篇)" },
+        { emoji: "✋➡️🐑", answer: "順手牽羊", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🤝🔪殺🧑", answer: "借刀殺人", category: "四字成語 (動作與人物篇)" },
+        { emoji: "遮👂偷🔔", answer: "掩耳盜鈴", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🔪⛵🔍🗡️", answer: "刻舟求劍", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🔨🍲⬇️⛵", answer: "破釜沉舟", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🌿🌳🪖", answer: "草木皆兵", category: "四字成語 (動作與人物篇)" },
+        { emoji: "🕶️🧑‍🦯🕶️🐎", answer: "盲人瞎馬", category: "四字成語 (動作與人物篇)" },
+        { emoji: "⬆️🌿🔍🐍", answer: "拔草尋蛇", category: "四字成語 (動作與人物篇)" },
+        { emoji: "✍️🌍為牢", answer: "畫地為牢", category: "四字成語 (動作與人物篇)" }
+    ];
+
+    let gameQuestions = [];
+    let currentQIndex = 0;
+    
+    // 遊戲狀態變數
+    let score = 0;
+    let timeLeft = 90;
+    let lives = 5;
+    let skipsLeft = 3;
+    let timerInterval;
+
+    // 洗牌演算法 (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        
+        // 重置所有狀態
+        score = 0;
+        timeLeft = 90;
+        lives = 5;
+        skipsLeft = 3;
+        
+        // 更新 UI 顯示
+        document.getElementById('score').innerText = score;
+        document.getElementById('time').innerText = timeLeft;
+        document.getElementById('lives').innerText = lives;
+        
+        const skipBtn = document.getElementById('skip-btn');
+        skipBtn.innerText = `⏭️ 跳過 (餘${skipsLeft})`;
+        skipBtn.disabled = false; // 確保按鈕可用
+        
+        // 開始時打亂 100 題
+        gameQuestions = shuffleArray(allQuestions);
+        currentQIndex = 0;
+        
+        loadQuestion();
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('time').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                endGame('time_up');
+            }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        if (currentQIndex >= gameQuestions.length) {
+            gameQuestions = shuffleArray(allQuestions);
+            currentQIndex = 0;
+        }
+        
+        const q = gameQuestions[currentQIndex];
+        document.getElementById('emoji').innerText = q.emoji;
+        document.getElementById('category').innerText = q.category;
+        
+        const charCount = q.answer.replace(/[\s\(\)-]/g, '').length;
+        document.getElementById('hint').innerText = `💡 提示：共 ${charCount} 字`;
+        
+        document.getElementById('answer').innerText = q.answer;
+        document.getElementById('answer').classList.remove('show-answer');
+    }
+
+    function showAnswer() {
+        document.getElementById('answer').classList.add('show-answer');
+    }
+
+    // 處理答對、答錯、跳過邏輯
+    function handleAnswer(type) {
+        if (type === 'correct') {
+            score++;
+            document.getElementById('score').innerText = score;
+            
+        } else if (type === 'wrong') {
+            lives--;
+            document.getElementById('lives').innerText = lives;
+            if (lives <= 0) {
+                endGame('lives_out');
+                return; // 生命耗盡，不載入下一題
+            }
+            
+        } else if (type === 'skip') {
+            if (skipsLeft <= 0) return; // 防呆機制
+            skipsLeft--;
+            const skipBtn = document.getElementById('skip-btn');
+            skipBtn.innerText = `⏭️ 跳過 (餘${skipsLeft})`;
+            
+            // 當次數用盡時禁用按鈕
+            if (skipsLeft <= 0) {
+                skipBtn.disabled = true;
+            }
+        }
+        
+        currentQIndex++;
+        loadQuestion();
+    }
+
+    // 遊戲結束邏輯
+    function endGame(reason) {
+        clearInterval(timerInterval);
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'block';
+        
+        // 根據結束原因顯示不同標題
+        const titleEl = document.getElementById('end-title');
+        if (reason === 'lives_out') {
+            titleEl.innerText = '💀 遊戲結束！生命耗盡';
+            titleEl.style.color = '#F44336';
+        } else {
+            titleEl.innerText = '⏰ 時間到！';
+            titleEl.style.color = 'var(--primary-color)';
+        }
+        
+        document.getElementById('final-score').innerText = score;
+    }
+
+    function resetGame() {
+        document.getElementById('end-screen').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
